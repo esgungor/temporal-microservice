@@ -28,6 +28,13 @@ type LaunchRequest struct {
 	LaunchType string `json:"launchType"`
 }
 
+type LaunchStatus struct {
+	Name        string `json:"name"`
+	Namespace   string `json:"namespace"`
+	LaunchType  string `json:"launchType"`
+	LaunchState string `json:"launchStatus"`
+}
+
 type LaunchKubernetesResponse struct {
 	Name       string
 	Namespace  string
@@ -38,8 +45,12 @@ type LaunchKubernetesResponse struct {
 
 func LaunchWorkflow(ctx workflow.Context, req LaunchRequest) error {
 	//Workflow Congfiurations
-
-	launchState := "CREATING"
+	launchState := LaunchStatus{
+		Name:        req.Name,
+		Namespace:   req.Namespace,
+		LaunchType:  req.LaunchType,
+		LaunchState: "CREATING",
+	}
 	result := LaunchKubernetesResponse{}
 	options := workflow.ActivityOptions{
 		ScheduleToCloseTimeout: time.Minute,
@@ -47,7 +58,7 @@ func LaunchWorkflow(ctx workflow.Context, req LaunchRequest) error {
 	ctx = workflow.WithActivityOptions(ctx, options)
 
 	//Query Handler
-	err := workflow.SetQueryHandler(ctx, "getStatus", func() (string, error) {
+	err := workflow.SetQueryHandler(ctx, "getStatus", func() (LaunchStatus, error) {
 		return launchState, nil
 	})
 	workflow.Sleep(ctx, 1*time.Minute)
@@ -60,7 +71,7 @@ func LaunchWorkflow(ctx workflow.Context, req LaunchRequest) error {
 	if err != nil {
 		panic(err)
 	}
-	launchState = "RUNNING"
+	launchState.LaunchState = "RUNNING"
 
 	// Signaling
 	var signalVal string

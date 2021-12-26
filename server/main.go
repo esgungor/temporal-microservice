@@ -58,12 +58,11 @@ func getLaunch(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	var result string
+	var result app.LaunchStatus
 	if err := resp.Get(&result); err != nil {
 		panic(err)
 	}
-	w.Write([]byte("Status of Launch is " + result))
-	fmt.Printf("Data: %v", result)
+	json.NewEncoder(w).Encode(&result)
 }
 
 func listLaunches(w http.ResponseWriter, r *http.Request) {
