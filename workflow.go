@@ -26,6 +26,7 @@ type LaunchRequest struct {
 	Name       string `json:"name"`
 	Namespace  string `json:"namespace"`
 	LaunchType string `json:"launchType"`
+	Operation  string `json:"operation"`
 }
 
 type LaunchStatus struct {
@@ -74,23 +75,26 @@ func LaunchWorkflow(ctx workflow.Context, req LaunchRequest) error {
 	launchState.LaunchState = "RUNNING"
 
 	// Signaling
-	var signalVal string
+	signalVal := LaunchRequest{}
 	signalName := "CHANGE_LAUNCH"
 	signalChan := workflow.GetSignalChannel(ctx, signalName)
 	s := workflow.NewSelector(ctx)
 	s.AddReceive(signalChan, func(c workflow.ReceiveChannel, more bool) {
 		c.Receive(ctx, &signalVal)
 		workflow.GetLogger(ctx).Info("Received signal!", "Signal", signalName, "value", signalVal)
-		if signalVal == "DELETE" {
+		if signalVal.Operation == "DELETE" {
 			workflow.ExecuteActivity(ctx, DeleteKubernetesDeployment)
+			launchState.LaunchState = "DELETED"
 		}
-		if signalVal == "UPDATE" {
-			workflow.ExecuteActivity(ctx, UpdateKubernetesDeployment)
+		if signalVal.Operation == "UPDATE" {
+			launchState.Name = signalVal.Name
+			launchState.Namespace = signalVal.Namespace
+			launchState.LaunchType = signalVal.LaunchType
 		}
 	})
 	for {
 		s.Select(ctx)
-		if signalVal == "DELETE" {
+		if signalVal.Operation == "DELETE" {
 			return nil
 		}
 

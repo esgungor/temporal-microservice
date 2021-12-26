@@ -26,8 +26,14 @@ var c client.Client
 
 func updateLaunch(w http.ResponseWriter, r *http.Request) {
 	ids := mux.Vars(r)
-
-	err := c.SignalWorkflow(context.Background(), ids["id"], ids["runId"], "CHANGE_LAUNCH", "UPDATE")
+	var reqBody app.LaunchRequest
+	json.NewDecoder(r.Body).Decode(&reqBody)
+	err := c.SignalWorkflow(context.Background(), ids["id"], ids["runId"], "CHANGE_LAUNCH", app.LaunchRequest{
+		Name:       reqBody.Name,
+		Namespace:  reqBody.Namespace,
+		LaunchType: reqBody.LaunchType,
+		Operation:  "UPDATE",
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -36,14 +42,12 @@ func updateLaunch(w http.ResponseWriter, r *http.Request) {
 func deleteLaunch(w http.ResponseWriter, r *http.Request) {
 	ids := mux.Vars(r)
 
-	c, err := client.NewClient(client.Options{
-		HostPort: "23.88.62.179:31313",
+	err := c.SignalWorkflow(context.Background(), ids["id"], ids["runId"], "CHANGE_LAUNCH", app.LaunchRequest{
+		Name:       "",
+		Namespace:  "",
+		LaunchType: "",
+		Operation:  "DELETE",
 	})
-	if err != nil {
-		panic(err)
-	}
-
-	err = c.SignalWorkflow(context.Background(), ids["id"], ids["runId"], "CHANGE_LAUNCH", "DELETE")
 	if err != nil {
 		panic(err)
 	}

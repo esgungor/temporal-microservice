@@ -21,7 +21,6 @@ func main() {
 	w := worker.New(c, app.LaunchQueue, worker.Options{})
 	w.RegisterWorkflow(app.LaunchWorkflow)
 	w.RegisterActivity(app.CreateKubernetesDeployment)
-	w.RegisterActivity(app.UpdateKubernetesDeployment)
 	w.RegisterActivity(app.DeleteKubernetesDeployment)
 
 	err = w.Run(worker.InterruptCh())
