@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/esgungor/launch-example-service/app"
+	"github.com/esgungor/temporal-microservice/app"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"go.temporal.io/api/filter/v1"
@@ -87,17 +87,14 @@ func listLaunches(w http.ResponseWriter, r *http.Request) {
 }
 
 func createLaunch(w http.ResponseWriter, r *http.Request) {
-
+	var body app.LaunchRequest
+	json.NewDecoder(r.Body).Decode(&body)
 	options := client.StartWorkflowOptions{
 		ID:        uuid.New().String(),
 		TaskQueue: app.LaunchQueue,
 	}
-	instanceRequest := app.LaunchRequest{
-		Name:       "esg-1",
-		Namespace:  "esg",
-		LaunchType: "GPU",
-	}
-	we, err := c.ExecuteWorkflow(context.Background(), options, app.LaunchWorkflow, instanceRequest)
+
+	we, err := c.ExecuteWorkflow(context.Background(), options, app.LaunchWorkflow, body)
 	if err != nil {
 		panic(err)
 	}

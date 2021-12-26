@@ -23,9 +23,9 @@ func CreateKubernetesDeployment(l LaunchRequest) (LaunchKubernetesResponse, erro
 var LaunchQueue = "LAUNCH_QUEUE"
 
 type LaunchRequest struct {
-	Name       string
-	Namespace  string
-	LaunchType string
+	Name       string `json:"name"`
+	Namespace  string `json:"namespace"`
+	LaunchType string `json:"launchType"`
 }
 
 type LaunchKubernetesResponse struct {

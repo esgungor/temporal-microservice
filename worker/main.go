@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/esgungor/launch-example-service/app"
+	"github.com/esgungor/temporal-microservice/app"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
